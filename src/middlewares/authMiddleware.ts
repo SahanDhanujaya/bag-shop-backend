@@ -1,26 +1,40 @@
 import type { Request, Response, NextFunction } from "express";
-import { auth } from "../config/firebase.ts"; // Import the initialized auth from your config
+import { adminAuth } from "../config/firebase.ts";
 
 export const authenticateUser = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const authHeader = req.headers.authorization;
+  const token = req.headers.authorization?.split("Bearer ")[1];
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Unauthorized: No token provided" });
-  }
-
-  const idToken = authHeader.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
 
   try {
-    // Fix: auth is already the service instance, so don't use ()
-    const decodedToken = await auth.verifyIdToken(idToken);
-    (req as any).user = decodedToken;
+    const decodedToken = await adminAuth.verifyIdToken(token);
+
+    // Extract the role from the token's custom claims
+    (req as any).user = {
+      uid: decodedToken.uid,
+      email: decodedToken.email,
+      role: decodedToken.role, // Role is now accessible here
+    };
+
     next();
   } catch (error) {
-    console.error("Error verifying Firebase ID token:", error);
-    res.status(401).json({ error: "Unauthorized: Invalid token" });
+    res.status(401).json({ error: "Invalid Token" });
   }
+};
+
+export const authorizeRole = (requiredRole: 'admin' | 'customer') => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const user = (req as any).user;
+
+        if (!user || user.role !== requiredRole) {
+            return res.status(403).json({ 
+                error: `Access denied. Requires ${requiredRole} role.` 
+            });
+        }
+        next();
+    };
 };

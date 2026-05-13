@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { dbConnectin } from './db/db.ts'; // Path fixed
 import authRouter from './routes/auth.routes.ts';
 import bagRoutes from './routes/bag.routes.ts';
+import orderRouter from './routes/order.routes.ts';
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use('/api/auth', authRouter);
 app.use('/api/bags', bagRoutes);
+app.use('/api/orders', orderRouter);
 
 const PORT = process.env.PORT || 5000;
 

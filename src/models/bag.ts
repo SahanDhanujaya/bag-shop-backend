@@ -7,10 +7,11 @@ const BagSchema = new mongoose.Schema({
     },
     price: {
         type: Number,
-        required: false
+        required: true // Changed to true for a shop
     },
+    // Updated to support 1-5 image URLs
     image: {
-        type: String,
+        type: [String], 
         required: true
     },
     description: {
@@ -33,6 +34,6 @@ const BagSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
-})
+}, { timestamps: true }); // Automatically manages createdAt and updatedAt
 
 export const Bag = mongoose.model('Bag', BagSchema);
