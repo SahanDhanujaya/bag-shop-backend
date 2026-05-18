@@ -1,14 +1,15 @@
 import type { Request, Response } from 'express';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { adminAuth, clientAuth } from '../config/firebase.ts'; 
+import { User } from '../models/auth.ts';
 
 export const register = async (req: Request, res: Response) => {
-    const { email, password, displayName, role } = req.body; // role should be 'admin' or 'customer'
+    const { email, password, name, role, address } = req.body; // role should be 'admin' or 'customer'
     try {
         const userRecord = await adminAuth.createUser({
             email,
             password,
-            displayName,
+            displayName: name,
         });
 
         if (!userRecord) {
@@ -22,6 +23,7 @@ export const register = async (req: Request, res: Response) => {
             // Default to customer if no role is provided
             await adminAuth.setCustomUserClaims(userRecord.uid, { role: 'customer' });
         }
+        await User.create({ name, email, password, address });
 
         res.status(201).json({ 
             message: 'User registered successfully', 
@@ -35,22 +37,33 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     try {
-        // Use clientAuth for password sign-in
         const userCredential = await signInWithEmailAndPassword(clientAuth, email, password);
         const user = userCredential.user;
 
-        // Access the token manager for accessToken and refreshToken
-        const stsTokenManager = (user as any).stsTokenManager;
+        // FORCE REFRESH (true) ensures the 'role' claim is included in the token
+        const idTokenResult = await user.getIdTokenResult(true);
 
         res.status(200).json({
             message: 'Login successful',
             uid: user.uid,
-            accessToken: stsTokenManager.accessToken,
-            refreshToken: stsTokenManager.refreshToken,
-            expiresIn: stsTokenManager.expirationTime
+            accessToken: idTokenResult.token, // This is the valid JWT
+            refreshToken: user.refreshToken,
+            expiresIn: idTokenResult.expirationTime,
+            role: idTokenResult.claims.role || 'customer'
         });
     } catch (error: any) {
         console.error('Login error:', error.code);
         res.status(401).json({ error: 'Invalid email or password' });
     }
+};
+
+export const logout = async (req: Request, res: Response) => {
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/', 
+    });
+
+    res.status(200).json({ message: 'Logged out successfully' });
 };
