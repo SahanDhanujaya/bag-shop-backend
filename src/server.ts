@@ -7,12 +7,7 @@ import authRouter from "./routes/auth.routes.ts";
 import bagRoutes from "./routes/bag.routes.ts";
 import orderRouter from "./routes/order.routes.ts";
 import userRouter from "./routes/user.routes.ts";
-import { fileURLToPath } from "url";
-import path from "path";
-import fs from "fs";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { configureCloudinary } from "./config/cloudinary.ts";
 
 dotenv.config();
 
@@ -31,19 +26,6 @@ app.use(
 
 app.use(express.json());
 
-// 2. ROBUST STATIC PATH RESOLUTION
-// Uses path.resolve to confidently target the root 'uploads' folder relative to this file
-const uploadsDir = path.resolve(__dirname, "../uploads");
-
-// Automatically recreates the uploads folder if Render's ephemeral system wipes it out
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log("📁 Created missing uploads directory at:", uploadsDir);
-}
-
-// Serve the directory statically
-app.use("/uploads", express.static(uploadsDir));
-
 // Routes
 app.use("/api/auth", authRouter);
 app.use("/api/bags", bagRoutes);
@@ -54,9 +36,9 @@ const PORT = process.env.PORT || 5000;
 
 dbConnectin()
   .then(() => {
+    configureCloudinary();
     app.listen(PORT, () => {
       console.log(`✅ Server definitely running on port ${PORT}`);
-      console.log(`📂 Serving static uploads from: ${uploadsDir}`);
     });
   })
   .catch((err) => {
