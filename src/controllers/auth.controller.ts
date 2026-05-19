@@ -100,6 +100,13 @@ export const login = async (req: Request, res: Response) => {
     // FORCE REFRESH (true) ensures the 'role' claim is included in the token
     const idTokenResult = await user.getIdTokenResult(true);
 
+    res.cookie("token", idTokenResult.token, {
+      httpOnly: true,
+      secure: true, // REQUIRED for cross-domain cookies
+      sameSite: "none", // REQUIRED for cross-domain cookies
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    });
+
     res.status(200).json({
       message: "Login successful",
       uid: user.uid,

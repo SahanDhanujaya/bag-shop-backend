@@ -18,22 +18,14 @@ dotenv.config();
 const app = express();
 
 app.use(cookieParser());
-const allowedOrigins = ["https://bag-shop-frontend.vercel.app"];
+
+app.enable("trust proxy");
+app.use(cookieParser());
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: "https://bag-shop-frontend.vercel.app",
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 app.use(express.json());
