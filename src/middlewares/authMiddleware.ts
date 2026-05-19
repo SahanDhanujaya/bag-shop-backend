@@ -13,10 +13,14 @@ declare global {
   }
 }
 
-export const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
+export const authenticateUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const authHeader = req.headers.authorization;
-  const token = authHeader?.startsWith("Bearer ") 
-    ? authHeader.split(" ")[1] 
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
     : req.cookies?.token;
 
   if (!token || token === "undefined" || token === "null") {
@@ -30,10 +34,9 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
       email: decodedToken.email,
       role: decodedToken.role || "customer",
     };
-    
+
     next();
   } catch (error) {
-    console.error("Token verification failed:", error);
     res.status(401).json({ error: "Invalid or expired token" });
   }
 };
@@ -45,7 +48,9 @@ export const authorizeRole = (requiredRole: "admin" | "customer") => {
   return (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;
     if (!user) {
-      return res.status(401).json({ error: "Unauthorized: No user found in request" });
+      return res
+        .status(401)
+        .json({ error: "Unauthorized: No user found in request" });
     }
 
     if (!user || user.role !== requiredRole) {

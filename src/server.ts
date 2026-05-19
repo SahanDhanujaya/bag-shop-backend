@@ -19,7 +19,7 @@ const app = express();
 
 app.use(cookieParser());
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: "https://bag-shop-frontend.vercel.app",
   credentials: true
 }));
 app.use(express.json());

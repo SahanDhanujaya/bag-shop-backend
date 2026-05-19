@@ -26,7 +26,6 @@ export const createOrder = async (req: Request, res: Response) => {
         res.status(201).json(newOrder[0]);
     } catch (error) {
         await session.abortTransaction();
-        console.error("Order Creation Error:", error);
         res.status(500).json({ error: "Failed to place order" });
     } finally {
         session.endSession();

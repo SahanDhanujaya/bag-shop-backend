@@ -35,7 +35,6 @@ export const saveBag = async (req: Request, res: Response) => {
     return res.status(201).json(newBag[0]);
   } catch (error) {
     await session.abortTransaction();
-    console.error("Save error:", error);
     return res.status(500).json({ error: "Failed to save bag" });
   } finally {
     session.endSession();
@@ -94,7 +93,6 @@ export const updateBag = async (req: Request, res: Response) => {
     return res.status(200).json(updatedBag);
   } catch (error) {
     await session.abortTransaction();
-    console.error("Update error:", error);
     return res.status(500).json({ error: "Update failed" });
   } finally {
     session.endSession();

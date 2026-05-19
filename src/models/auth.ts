@@ -2,6 +2,10 @@ import { signInWithPopup } from "firebase/auth";
 import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema({
+    _id: {
+        type: String,
+        required: false
+    },
     name: {
         type: String,
         required: true
@@ -17,6 +21,12 @@ const UserSchema = new mongoose.Schema({
     address: {
         type: String,
         required: true
+    },
+    role: {
+        type: String,
+        required: true,
+        enum: ["admin", "customer"],
+        default: "customer"
     },
     createdAt: {
         type: Date,
