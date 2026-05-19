@@ -17,8 +17,6 @@ dotenv.config();
 
 const app = express();
 
-app.use(cookieParser());
-
 app.enable("trust proxy");
 app.use(cookieParser());
 
